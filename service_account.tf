@@ -1,6 +1,11 @@
+locals {
+  cloudsql_sa_name = "cloudsql-sa"
+  k8s_namespace = "default"
+}
+
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_service_account
 resource "google_service_account" "cloudsql_sa" {
-  account_id   = var.cloudsql_sa_name
+  account_id   = local.cloudsql_sa_name
   display_name = "CloudSql access Service Account"
   project      = var.project_id
 }
@@ -34,7 +39,7 @@ module "service_account-iam-bindings" {
   bindings = {
     "roles/iam.serviceAccountUser" = [
       "serviceAccount:${google_service_account.cloudsql_sa.email}",
-      "serviceAccount:${var.project_id}.svc.id.goog[${var.k8s_namespace}/${var.cloudsql_sa_name}]"
+      "serviceAccount:${var.project_id}.svc.id.goog[${local.k8s_namespace}/${local.cloudsql_sa_name}]"
     ]
 
     "roles/iam.workloadIdentityUser" = [
