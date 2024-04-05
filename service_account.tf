@@ -1,41 +1,44 @@
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_service_account
-resource "google_service_account" "cloudsql-sa" {
-  account_id = "cloudsql-sa"
+resource "google_service_account" "cloudsql_sa" {
+  account_id   = var.cloudsql_sa_name
+  display_name = "CloudSql access Service Account"
+  project      = var.project_id
 }
 
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_project_iam
-resource "google_project_iam_member" "instanceuser-sa" {
-  project = var.project_id
-  role    = "roles/cloudsql.instanceUser"
+module "project-iam-bindings" {
+  source   = "terraform-google-modules/iam/google//modules/projects_iam"
+  projects = [var.project_id, ]
+  mode     = "authoritative"
+  #mode     = "additive"
 
-  member = "serviceAccount:${google_service_account.cloudsql-sa.email}"
+  bindings = {
+    "roles/cloudsql.instanceUser" = [
+      "serviceAccount:${google_service_account.cloudsql_sa.email}",
+    ]
+
+    "roles/cloudsql.client" = [
+      "serviceAccount:${google_service_account.cloudsql_sa.email}",
+    ]
+  }
 }
 
-resource "google_project_iam_member" "instanceclient-sa" {
-  project = var.project_id
-  role    = "roles/cloudsql.client"
+module "service_account-iam-bindings" {
+  source = "terraform-google-modules/iam/google//modules/service_accounts_iam"
 
-  member = "serviceAccount:${google_service_account.cloudsql-sa.email}"
-}
+  service_accounts = [google_service_account.cloudsql_sa.email]
+  project          = var.project_id
+  mode             = "authoritative"
+  #mode             = "additive"
 
-# https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_service_account_iam
-resource "google_service_account_iam_binding" "serviceaccountuser-sa" {
-  service_account_id = google_service_account.cloudsql-sa.id
-  role               = "roles/iam.serviceAccountUser"
+  bindings = {
+    "roles/iam.serviceAccountUser" = [
+      "serviceAccount:${google_service_account.cloudsql_sa.email}",
+      "serviceAccount:${var.project_id}.svc.id.goog[${var.k8s_namespace}/${var.cloudsql_sa_name}]"
+    ]
 
-  members = [
-    "serviceAccount:${google_service_account.cloudsql-sa.email}",
-    "serviceAccount:${var.project_id}.svc.id.goog[default/cloudsql-sa]"
-  ]
-}
-
-resource "google_service_account_iam_binding" "workloadidentityuser-sa" {
-  service_account_id = google_service_account.cloudsql-sa.id
-  role               = "roles/iam.workloadIdentityUser"
-
-  members = [
-    "serviceAccount:${google_service_account.cloudsql-sa.email}",
-  ]
-  #  member             = ["serviceAccount:${google_service_account.cloudsql-sa.email}", "serviceAccount:${var.project_id}.svc.id.goog[default/cloudsql-sa]"]
-  #  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/cloudsql-sa]"
+    "roles/iam.workloadIdentityUser" = [
+      "serviceAccount:${google_service_account.cloudsql_sa.email}",
+    ]
+  }
 }

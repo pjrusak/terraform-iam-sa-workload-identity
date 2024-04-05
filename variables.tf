@@ -18,3 +18,15 @@ variable "terraform_service_account" {
   type        = string
   description = "The name of the SA to impersonate"
 }
+
+variable "cloudsql_sa_name" {
+  type        = string
+  default     = "cloudsql-sa"
+  description = "The name of the SA to interact with a CloudSQL instance"
+}
+
+variable "k8s_namespace" {
+  type        = string
+  default     = "default"
+  description = "The name of the k8s namespace with which wokload identity will be used"
+}
