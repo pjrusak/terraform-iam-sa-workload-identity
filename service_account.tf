@@ -1,6 +1,6 @@
 locals {
   cloudsql_sa_name = "cloudsql-sa"
-  k8s_namespace = "default"
+  k8s_namespace    = "default"
 }
 
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_service_account
