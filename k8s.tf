@@ -53,7 +53,7 @@ resource "kubernetes_pod" "wi-bucket-ksa-missing-pod" {
       "node_pool"                              = "pool-01"
     }
 
-    service_account_name = kubernetes_service_account.ksa_wi_missing.id
+    service_account_name = split("/", kubernetes_service_account.ksa_wi_missing.id).1
   }
 }
 
@@ -75,7 +75,7 @@ resource "kubernetes_pod" "wi-bucket-ksa-correct-pod" {
       "node_pool"                              = "pool-01"
     }
 
-    service_account_name = kubernetes_service_account.ksa_wi_correct.id
+    service_account_name = split("/", kubernetes_service_account.ksa_wi_correct.id).1
   }
 }
 
@@ -97,6 +97,6 @@ resource "kubernetes_pod" "wi-bucket-ksa-principal-pod" {
       "node_pool"                              = "pool-01"
     }
 
-    service_account_name = kubernetes_service_account.ksa_wi_principal.id
+    service_account_name = split("/", kubernetes_service_account.ksa_wi_principal.id).1
   }
 }
